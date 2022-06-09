@@ -1,10 +1,7 @@
-import os from 'os';
 import process from 'process';
-
 import { getOSinfo } from './src/nav/navos.js'
-
 import { homedir, up, cd, ls, cat, add, rename, copyStream, remove, calculateHash } from './src/nav/navigation.js'
-
+import { compress, decompress } from './src/nav/zip-brotli.js'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -17,20 +14,6 @@ console.log(__dirname);
 
 let currentDir = homedir();
 
-
-/////////////
-//const userHomeDir = os.homedir()
-//console.log(userHomeDir);
-//console.log(userHomeDir.split(path.sep).pop());
-//await list(userHomeDir)
-
-//const userhomedir = homedir()
-
-//console.log(userhomedir);
-//console.log(up(userhomedir));
-
-///////////
-
 const username = process.argv.slice(2)[0].split("=")[1];
 console.log(`Welcome to the File Manager, ${username}!`);
 console.log(`You are currently in ${currentDir}`);
@@ -41,18 +24,10 @@ process.stdin.on('readable', async function() {
 	var input = process.stdin.read();
 
 	if (input !== null) {
-		//process.stdout.write(input);
-		var command = input.trim();
 
+		var command = input.trim();
 		let nav = command.split(' ');
 
-		//console.log(nav);
-		/*
-		if (command == 'exit') {
-			process.exit(0);
-		}
-		*/
-		//console.log(nav[0]);
 		switch (nav[0]){
 			case 'exit' :
 				process.exit(0);
@@ -89,6 +64,12 @@ process.stdin.on('readable', async function() {
 				break;
 			case 'hash':
 				await calculateHash(currentDir, nav[1]);
+				break;
+			case 'compress':
+				await compress(currentDir, nav[1], nav[2]);
+				break;
+			case 'decompress':
+				await decompress(currentDir, nav[1], nav[2]);
 				break;
 			default:
 				console.log('Invalid input');

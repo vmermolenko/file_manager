@@ -28,12 +28,12 @@ const cd = async (pathDir, pathDest) => {
 
 	console.log('Operation failed');
 	
-    return pathDir;
+  return pathDir;
 };
 
 const ls = async (pathFolder) => {
 	if (!fs.existsSync(pathFolder)) throw new Error('FS operation failed')
-        fs.readdirSync(pathFolder).forEach(file => {
+    fs.readdirSync(pathFolder).forEach(file => {
 		console.log(file);
 	});
 };
@@ -60,10 +60,11 @@ const cat = async (currentDir, pathFile) => {
 const add = async (currentDir, new_file_name) => {
 	const tmpPath = path.join(currentDir, new_file_name);
 	if (fs.existsSync(tmpPath)) {
-		console.log('Operation failed1');
+		console.log('Operation failed');
 	} else {
 		fs.writeFile(tmpPath, '', (err) => {
-			if (err) console.log('Operation failed2');				
+			if (err) console.log('Operation failed');
+			console.log('File created successfully: ' + tmpPath);				
 		});
 	}
 };
@@ -81,15 +82,15 @@ const rename = async (currentDir, pathFile, new_filename) => {
 	const arrPath = oldPath.split(path.sep)
 	arrPath.pop();
 	arrPath.push(new_filename)
-    const newPath = arrPath.join(path.sep);
+  const newPath = arrPath.join(path.sep);
 
-	console.log(newPath);
-
-    if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) {
+  if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) {
 		console.log('Operation failed')
 		return;
 	}
-    fs.renameSync(oldPath, newPath);
+  fs.renameSync(oldPath, newPath);
+
+	console.log('Rename successfully: ' + newPath);
 };
 
 
@@ -105,17 +106,24 @@ const copyStream = async (currentDir, pathFile, path_to_new_directory) => {
 	} 
 
 	const fileName = oldPath.split(path.sep).pop();
-	const newPath = path.join(currentDir, path_to_new_directory,fileName);
+	let newPath = path.join(currentDir, path_to_new_directory);
 
-	if ((fs.existsSync(newPath) && isExistHomedir(newPath))) {
-		console.log('Operation failed')
+	if ((isDir(path_to_new_directory) && isExistHomedir(path_to_new_directory))) {
+		newPath = path_to_new_directory;
+	} else if ( !(isDir(newPath) && isExistHomedir(newPath)) ){
+		console.log('Operation failed');
 		return;
-	}
+	} 
 
+	newPath = path.join(newPath, fileName);
+	console.log(oldPath);
+	console.log(newPath);
 	var readable = fs.createReadStream(oldPath, { encoding: 'utf8', highWaterMark: 16 * 1024 });
 	var writable = fs.createWriteStream(newPath);
 	
 	readable.pipe(writable);
+
+	console.log('Copy successfully: ' + newPath);
 };
 
 const remove = async (currentDir, pathFile) => {
@@ -130,9 +138,8 @@ const remove = async (currentDir, pathFile) => {
 	} 
 
 	fs.rm(oldPath, (err) => {
-		if (err) {
-			console.log('Operation failed')
-		};
+		if (err) console.log('Operation failed');
+		console.log('File deleted successfully: ' + oldPath);
 	})
 };
 
@@ -154,18 +161,17 @@ const calculateHash = async (currentDir, pathFile) => {
 	console.log(hex);
 };
 
-
 function isDir(path) {
-    try {
-        var stat = fs.lstatSync(path);
-        return stat.isDirectory();
-    } catch (e) {
-        return false;
-    }
+	try {
+		var stat = fs.lstatSync(path);
+		return stat.isDirectory();
+	} catch (e) {
+		return false;
+	}
 }
 
 function isExistHomedir(pathDest) {
-    const pathFirst = homedir();
+  const pathFirst = homedir();
 	const tmp = pathDest.slice(0,pathFirst.length);
 	return pathFirst === tmp
 }
